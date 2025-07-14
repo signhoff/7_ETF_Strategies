@@ -1,0 +1,31 @@
+# requirements.txt
+
+# Core Data Science & Plotting
+pandas
+numpy
+matplotlib
+scipy
+
+# Financial APIs & Data
+yfinance
+ibapi
+polygon-api-client
+
+# Environment & Configuration
+python-dotenv # For loading .env files
+
+# Scheduling
+apscheduler
+
+# Testing
+pytest
+pytest-asyncio
+
+# Data Storage
+pyarrow # For reading/writing Parquet files
+
+# Machine Learning
+scikit-learn
+
+# Type Stubs for better static analysis
+pandas-stubs

@@ -1,0 +1,7 @@
+{
+    "python.analysis.typeCheckingMode": "strict",
+    "python.envFile": "${workspaceFolder}/.env",
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportMissingTypeStubs": "none"
+    }
+}
