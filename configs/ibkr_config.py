@@ -21,3 +21,20 @@ CLIENT_ID_GUI_GENERAL = 103  # If GUI needs another general purpose connection
 
 # --- Logging Configuration ---
 LOG_LEVEL = 'INFO'
+
+# --- Strategy Selection ---
+# Choose the strategy to run from the available keys in STRATEGY_MAP in main.py
+# Options: "3_day_hl", "rsi_25_75", "r3", "percent_b", "mdd_mdu", "rsi_10_6_90_94", "tps"
+a_strategy_to_run = "r3"
+
+# --- DEPRECATED: ETF List ---
+# The list of ETFs is now loaded from configs/etf_universe.csv
+a_list_of_etfs = ["SPY", "QQQ", "IWM"] # This list is no longer used by main.py
+
+# --- Portfolio and Risk Management ---
+# The total value of the portfolio in USD.
+PORTFOLIO_VALUE_USD = 25000.00
+
+# The percentage of the portfolio to risk on a single "unit" of a trade.
+# For example, 0.25 means 0.25% of the portfolio value.
+RISK_PER_TRADE_PERCENT = 0.25

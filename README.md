@@ -1,6 +1,172 @@
-# Quantitative Finance Project Template
+# High-Probability ETF Trading Strategies
 
-This repository serves as a professional, scalable template for quantitative finance applications in Python. It provides a robust architecture for developing, testing, and deploying strategies that interact with financial data APIs like Interactive Brokers and Polygon.io.
+This project is a Python-based application designed to systematically implement, backtest, and trade the seven high-probability ETF trading strategies described in the book "High Probability ETF Trading" by Larry Connors and Cesar Alvarez.
+
+---
+
+## Features
+
+* **Strategy Implementation**: All seven mean-reversion strategies from the book are implemented in a modular and reusable way.
+* **Comprehensive Backtester**: A powerful end-to-end test script (`tests/test_e2e_strategies.py`) that simulates strategy performance over 5 years of historical data, complete with dynamic P&L tracking and equity curve generation.
+* **Daily Signal Scanner**: A daily scanner (`daily_scanner.py`) that checks the entire ETF universe for new trading signals and provides a detailed report for managing open positions.
+* **Live Paper Trading**: A main application (`main.py`) designed to connect to the Interactive Brokers TWS API for live paper trading of the strategies.
+* **Configurable & Extensible**: The application is designed to be easily configured through simple files, allowing users to change the ETF universe, risk parameters, and strategies without modifying the core code.
+
+---
+
+## Project Structure
+
+ TWS Projects - Code Prompt
+Custom Gem
+
+Of course. Here is the complete README.md file in a raw Markdown format that you can easily copy and paste.
+Markdown
+
+---
+
+# High-Probability ETF Trading Strategies
+
+This project is a Python-based application designed to systematically implement, backtest, and trade the seven high-probability ETF trading strategies described in the book "High Probability ETF Trading" by Larry Connors and Cesar Alvarez.
+
+---
+
+## Features
+
+* **Strategy Implementation**: All seven mean-reversion strategies from the book are implemented in a modular and reusable way.
+* **Comprehensive Backtester**: A powerful end-to-end test script (`tests/test_e2e_strategies.py`) that simulates strategy performance over 5 years of historical data, complete with dynamic P&L tracking and equity curve generation.
+* **Daily Signal Scanner**: A daily scanner (`daily_scanner.py`) that checks the entire ETF universe for new trading signals and provides a detailed report for managing open positions.
+* **Live Paper Trading**: A main application (`main.py`) designed to connect to the Interactive Brokers TWS API for live paper trading of the strategies.
+* **Configurable & Extensible**: The application is designed to be easily configured through simple files, allowing users to change the ETF universe, risk parameters, and strategies without modifying the core code.
+
+---
+
+## Project Structure
+/
+├── configs/
+│   ├── ibkr_config.py
+│   └── etf_universe.csv
+├── data/
+│   ├── (generated csv and json files)
+├── handlers/
+│   ├── ibkr_api_wrapper.py
+│   └── yfinance_handler.py
+├── strategies/
+│   ├── three_day_hl.py
+│   ├── rsi_25_75.py
+│   ├── r3_strategy.py
+│   ├── percent_b_strategy.py
+│   ├── mdd_mdu.py
+│   ├── rsi_10_6_90_94.py
+│   └── tps_strategy.py
+├── tests/
+│   └── test_e2e_strategies.py
+├── utils/
+│   ├── financial_calculations.py
+│   └── logging_config.py
+├── .gitignore
+├── daily_scanner.py
+├── data_manager.py
+├── main.py
+└── requirements.txt
+
+---
+
+## Strategies Implemented
+
+1.  **The 3-Day High/Low Method**
+2.  **RSI 25 & RSI 75**
+3.  **R3 Strategy**
+4.  **The %b Strategy**
+5.  **Multiple Days Down (MDD) & Multiple Days Up (MDU)**
+6.  **RSI 10/6 & RSI 90/94**
+7.  **TPS (Time-Price-Scale-in)**
+
+## Strategy Details
+
+Below is a detailed breakdown of the rules for each implemented strategy. The core logic for all strategies is filtered by a long-term trend indicator: long positions are only considered if the ETF is above its 200-day SMA, and short positions are only considered if it is below.
+
+### 1. The 3-Day High/Low Method
+* **Concept**: A simple price-action strategy that identifies a three-day pattern of price exhaustion.
+* **Long Side Rules**:
+    * **Entry**: Buy on close if the ETF has had three consecutive days of lower highs and lower lows, and today's close is below the 5-day SMA.
+    * **Aggressive Entry**: If a position is open, buy a second unit if the ETF's closing price is lower than the initial entry price.
+    * **Exit**: Exit the entire position on any day the ETF's closing price is above its 5-day SMA.
+* **Short Side Rules**:
+    * **Entry**: Sell short on close if the ETF has had three consecutive days of higher highs and higher lows, and today's close is above the 5-day SMA.
+    * **Aggressive Entry**: If a position is open, sell short a second unit if the ETF's closing price is higher than the initial entry price.
+    * **Exit**: Cover the entire position on any day the ETF's closing price is below its 5-day SMA.
+
+### 2. RSI 25 & RSI 75
+* **Concept**: Uses a sensitive 4-period RSI to identify short-term overbought and oversold conditions.
+* **Indicator**: 4-period RSI.
+* **Long Side Rules**:
+    * **Entry**: Buy when the 4-period RSI closes under 25.
+    * **Aggressive Entry**: If a position is open, buy a second unit if the RSI closes under 20.
+    * **Exit**: Exit when the 4-period RSI closes above 55.
+* **Short Side Rules**:
+    * **Entry**: Sell short when the 4-period RSI closes above 75.
+    * **Aggressive Entry**: If a position is open, sell short a second unit if the RSI closes above 80.
+    * **Exit**: Cover when the 4-period RSI closes under 45.
+
+### 3. R3 Strategy
+* **Concept**: Combines a persistent momentum decline with an extreme oversold reading using a highly sensitive 2-period RSI.
+* **Indicator**: 2-period RSI.
+* **Long Side Rules**:
+    * **Entry**: Buy if the 2-period RSI has dropped for three consecutive days (starting from a value below 60) and today's RSI closes under 10.
+    * **Aggressive Entry**: If a position is open, buy a second unit if the ETF's closing price is lower than the initial entry price.
+    * **Exit**: Exit when the 2-period RSI closes above 70.
+* **Short Side Rules**:
+    * **Entry**: Sell short if the 2-period RSI has risen for three consecutive days (starting from a value above 40) and today's RSI closes above 90.
+    * **Aggressive Entry**: If a position is open, sell short a second unit if the ETF's closing price is higher than the initial entry price.
+    * **Exit**: Cover when the 2-period RSI closes below 30.
+
+### 4. The %b Strategy
+* **Concept**: Uses Bollinger Bands %b to identify when a price is persistently "hugging" the lower or upper band.
+* **Indicator**: Bollinger Bands %b (20-period SMA, 2 standard deviations).
+* **Long Side Rules**:
+    * **Entry**: Buy after the daily closing %b value has been below 0.2 for three consecutive days.
+    * **Aggressive Entry**: If a position is open, buy a second unit if the %b closes below 0.2 on any subsequent day.
+    * **Exit**: Exit when the %b closes above 0.8.
+* **Short Side Rules**:
+    * **Entry**: Sell short after the daily closing %b value has been above 0.8 for three consecutive days.
+    * **Aggressive Entry**: If a position is open, sell short a second unit if the %b closes above 0.8 on any subsequent day.
+    * **Exit**: Cover when the %b closes below 0.2.
+
+### 5. Multiple Days Down (MDD) & Multiple Days Up (MDU)
+* **Concept**: A direct quantification of a pullback, looking for a sequence of predominantly down-days or up-days.
+* **Long Side Rules (MDD)**:
+    * **Entry**: Buy if the ETF has had a lower close on at least 4 of the past 5 days, and today's close is below the 5-day SMA.
+    * **Aggressive Entry**: If a position is open, buy a second unit if the ETF's closing price is lower than the initial entry price.
+    * **Exit**: Exit when the ETF closes above its 5-day SMA.
+* **Short Side Rules (MDU)**:
+    * **Entry**: Sell short if the ETF has had a higher close on at least 4 of the past 5 days, and today's close is above the 5-day SMA.
+    * **Aggressive Entry**: If a position is open, sell short a second unit if the ETF's closing price is higher than the initial entry price.
+    * **Exit**: Cover when the ETF closes below its 5-day SMA.
+
+### 6. RSI 10/6 & RSI 90/94
+* **Concept**: An aggressive, two-tiered strategy using extreme 2-period RSI readings for both initial and scale-in entries.
+* **Indicator**: 2-period RSI.
+* **Long Side Rules**:
+    * **Initial Entry**: Buy when the 2-period RSI closes under 10.
+    * **Second Entry**: If a position is open, buy a second unit if the RSI closes under 6.
+    * **Exit**: Exit when the ETF closes above its 5-day SMA.
+* **Short Side Rules**:
+    * **Initial Entry**: Sell short when the 2-period RSI closes above 90.
+    * **Second Entry**: If a position is open, sell short a second unit if the RSI closes above 94.
+    * **Exit**: Cover when the ETF closes below its 5-day SMA.
+
+### 7. TPS (Time-Price-Scale-in)
+* **Concept**: A sophisticated strategy that synthesizes time, price, and a multi-tiered, pyramid-style scaling approach.
+* **Indicator**: 2-period RSI.
+* **Position Sizing**: Capital is deployed in four tranches: 10%, 20%, 30%, and 40% of the total intended position size.
+* **Long Side Rules**:
+    * **Tranche 1 (10%)**: Buy after the 2-period RSI closes below 25 for two consecutive days.
+    * **Tranches 2, 3, 4**: On any day after the previous tranche is filled, buy the next tranche if the ETF's closing price is lower than the entry price of the most recent tranche.
+    * **Exit**: Exit the entire position when the 2-period RSI closes above 70.
+* **Short Side Rules**:
+    * **Tranche 1 (10%)**: Sell short after the 2-period RSI closes above 75 for two consecutive days.
+    * **Tranches 2, 3, 4**: On any day after the previous tranche is filled, sell short the next tranche if the ETF's closing price is higher than the entry price of the most recent tranche.
+    * **Exit**: Cover the entire position when the 2-period RSI closes below 30.
 
 ## Core Features
 
@@ -11,38 +177,6 @@ This repository serves as a professional, scalable template for quantitative fin
 * **Secure Configuration**: Manages API keys and sensitive settings securely through environment variables using a `.env` file.
 * **Centralized Logging**: A pre-configured logging setup that provides consistent and clear output across all modules.
 * **Testing Framework**: Includes a `pytest` environment with existing unit tests for core utilities, promoting a test-driven development approach.
-
----
-
-## Project Structure
-/
-├── configs/                   # Configuration files for APIs and application settings
-│   ├── ibkr_config.py
-│   └── polygon_config.py
-├── data/                      # Local cache for historical data (ignored by Git)
-├── handlers/                  # Modules for interacting with external APIs
-│   ├── ibkr_api_wrapper.py
-│   ├── ibkr_base_handler.py
-│   ├── ibkr_option_handler.py
-│   ├── ibkr_stock_handler.py
-│   ├── polygon_api_handler_historical.py
-│   └── yfinance_handler.py
-├── tests/                     # Unit and integration tests
-│   ├── test_options_models.py
-│   └── test_performance_metrics.py
-├── utils/                     # Reusable, pure-logic utility functions
-│   ├── logging_config.py
-│   ├── options_models.py
-│   ├── performance_metrics.py
-│   ├── plotting_utils.py
-│   ├── polygon_utils.py
-│   └── financial_calculations.py
-├── .env                       # Local environment variables (API keys, etc.)
-├── .gitignore                 # Specifies files for Git to ignore
-├── .python-version            # Specifies the python version for pyenv users
-├── data_manager.py            # Core class for managing data access and caching
-├── pyproject.toml             # Project metadata and dependencies
-└── requirements.txt           # List of Python package dependencies
 
 ---
 

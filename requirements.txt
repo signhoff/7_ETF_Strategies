@@ -29,3 +29,4 @@ scikit-learn
 
 # Type Stubs for better static analysis
 pandas-stubs
+

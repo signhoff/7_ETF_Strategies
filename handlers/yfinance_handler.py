@@ -1,61 +1,64 @@
 # handlers/yfinance_handler.py
 
 """
-Handles historical data fetching from the yfinance library using a
-class-based and asynchronous approach for maximum performance.
+A handler to interact with the yfinance library for fetching historical market data.
 """
-
-import asyncio
-import os
-import sys
-from typing import Any, Dict, List, Optional
 
 import pandas as pd
 import yfinance as yf
-
-from utils.logging_config import get_logger
-
-logger = get_logger(__name__)
-
-CACHE_DIR = "data/cache"
-CACHE_START_DATE = "2000-01-01"
-
+import logging
+from typing import Optional, Dict, Any, List
 
 class YFinanceHandler:
     """
-    A handler for fetching and caching historical stock data using yfinance.
-    Optimized for handling multiple tickers efficiently and asynchronously.
+    A wrapper class for the yfinance library to standardize data fetching.
     """
+    def __init__(self, logger: Optional[logging.Logger] = None):
+        """
+        Initializes the YFinanceHandler.
 
-    def __init__(self, cache_dir: str = CACHE_DIR):
-        self.cache_dir = cache_dir
-        if not os.path.exists(self.cache_dir):
-            os.makedirs(self.cache_dir)
-        self.semaphore = asyncio.Semaphore(5)  # Allow a few concurrent info lookups
+        Args:
+            logger (Optional[logging.Logger]): An optional logger instance.
+                                               If None, a default logger is created.
+        """
+        self.logger = logger or logging.getLogger(__name__)
+
+    def get_historical_data(self, symbol: str, period: str = "1y", interval: str = "1d") -> pd.DataFrame:
+        """
+        Fetches historical data for a given symbol from Yahoo Finance.
+
+        Args:
+            symbol (str): The ticker symbol to fetch data for.
+            period (str): The period of data to fetch (e.g., "1d", "5d", "1mo", "1y", "max").
+            interval (str): The data interval (e.g., "1m", "2m", "1h", "1d").
+
+        Returns:
+            pd.DataFrame: A DataFrame containing the historical data, or an empty
+                          DataFrame if an error occurs.
+        """
+        self.logger.info(f"Fetching {period} of {interval} data for {symbol} from yfinance.")
+        try:
+            ticker = yf.Ticker(symbol)
+            data = ticker.history(period=period, interval=interval)
+            if data.empty:
+                self.logger.warning(f"No data found for symbol {symbol} with period {period}.")
+            return data
+        except Exception as e:
+            self.logger.error(f"An error occurred while fetching data for {symbol}: {e}")
+            return pd.DataFrame()
 
     async def get_ticker_info(self, ticker: str) -> Optional[Dict[str, Any]]:
         """
-        Fetches fundamental information for a given stock ticker asynchronously.
-
-        Args:
-            ticker (str): The stock ticker symbol.
-
-        Returns:
-            A dictionary containing ticker information, or None if invalid.
+        Asynchronously fetches ticker information.
+        Note: This async method is part of the template but not used by the synchronous e2e test.
         """
-        async with self.semaphore:
-            try:
-                # yf.Ticker is a blocking call, so we run it in a thread
-                ticker_obj = await asyncio.to_thread(yf.Ticker, ticker)
-                info_dict = await asyncio.to_thread(getattr, ticker_obj, 'info')
-
-                if not info_dict or 'symbol' not in info_dict:
-                    logger.warning(f"Could not retrieve valid info for ticker '{ticker}'.")
-                    return None
-                return info_dict
-            except Exception as e:
-                logger.error(f"An error occurred fetching info for {ticker}: {e}")
-                return None
+        try:
+            t = yf.Ticker(ticker)
+            info = t.info
+            return info
+        except Exception as e:
+            self.logger.error(f"Error fetching info for {ticker}: {e}")
+            return None
 
     async def _fetch_and_cache_ticker(self, ticker: str, end_date: str) -> bool:
         """
